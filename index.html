@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HTML Handbook — Animated</title>
+  <style>
+    /* CSS RESET (light) */
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial; color: #0f172a; background: radial-gradient(1000px 600px at 10% 10%, #f1f5f9, transparent), radial-gradient(900px 600px at 90% 20%, #e0f2fe, transparent), radial-gradient(800px 600px at 30% 90%, #fae8ff, transparent), #f8fafc; }
+
+    /* Theme */
+    :root{
+      --bg: #0b1020;
+      --panel: #ffffff;
+      --ink: #0b1020;
+      --muted: #475569;
+      --brand: #6d28d9; /* purple */
+      --brand-2: #0ea5e9; /* sky */
+      --brand-3: #22c55e; /* green */
+      --code-bg: #0f172a;
+      --code-ink: #e2e8f0;
+      --chip: #eef2ff;
+      --ok: #16a34a;
+      --warn: #ea580c;
+      --bad: #dc2626;
+      --radius: 18px;
+      --shadow: 0 10px 30px rgba(2,6,23,.12);
+    }
+
+    /* Floating shapes background animation */
+    .bg-anim {
+      position: fixed; inset: 0; overflow: hidden; z-index: -1;
+    }
+    .blob {
+      position: absolute; width: 520px; height: 520px; filter: blur(60px); opacity: .35; border-radius: 50%;
+      animation: float 24s ease-in-out infinite;
+      will-change: transform;
+    }
+    .b1 { background: #a78bfa; left: -120px; top: -120px; animation-delay: -4s; }
+    .b2 { background: #7dd3fc; right: -140px; top: 10%; animation-delay: -10s; }
+    .b3 { background: #86efac; left: 40%; bottom: -160px; animation-delay: -14s; }
+    @keyframes float { 0%,100%{ transform: translateY(0) translateX(0) scale(1);} 50%{ transform: translateY(-40px) translateX(20px) scale(1.05);} }
+
+    /* Layout */
+    header.hero{
+      position: relative; padding: 96px 24px 64px; text-align:center; color: #0b1020;
+    }
+    .hero h1{
+      font-size: clamp(2.2rem, 3vw + 1rem, 3.4rem);
+      line-height: 1.05; margin: 0 0 12px; letter-spacing: -0.02em;
+    }
+    .hero p { max-width: 880px; margin: 8px auto 24px; color: var(--muted); font-weight: 500; }
+    .chips{ display:flex; gap:10px; justify-content:center; flex-wrap: wrap; }
+    .chip{ padding:8px 12px; background:var(--chip); border-radius:999px; font-size: 13px; border:1px solid #e2e8f0; }
+
+    nav.toc {
+      position: sticky; top: 0; backdrop-filter: blur(8px); background: rgba(255,255,255,.85); border-bottom: 1px solid #e2e8f0; z-index: 20;
+    }
+    .toc-inner{ display:flex; gap:16px; overflow:auto; padding: 12px 16px; }
+    .toc-inner a{ text-decoration: none; color: #0b1020; font-weight: 600; padding: 8px 12px; border-radius: 12px; border:1px solid transparent; }
+    .toc-inner a:hover{ background:#eef2ff; border-color:#c7d2fe; }
+
+    main{ display:grid; grid-template-columns: minmax(0,1fr) 320px; gap:24px; padding: 28px; max-width: 1200px; margin: 0 auto; }
+    @media (max-width: 1040px){ main{ grid-template-columns: 1fr; } }
+
+    .card{
+      background: var(--panel); border: 1px solid #e5e7eb; border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; margin: 14px 0;
+      animation: rise .8s ease both; transform-origin: top center;
+    }
+    @keyframes rise{ from{ opacity: 0; transform: translateY(10px) scale(.995);} to{ opacity:1; transform: translateY(0) scale(1);} }
+
+    .section h2{ margin: 8px 0 6px; font-size: 1.8rem; letter-spacing: -0.02em; }
+    .section p{ color: var(--muted); }
+    .grid{ display:grid; gap:16px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+
+    details{ border:1px dashed #cbd5e1; border-radius: 12px; padding: 12px 12px; background: #fafafa; }
+    details > summary{ cursor: pointer; font-weight: 700; list-style: none; }
+    details[open]{ background: #ffffff; border-style: solid; }
+
+    .code{ background: var(--code-bg); color: var(--code-ink); border-radius: 14px; padding: 14px; overflow: auto; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 13px; }
+    .kbd{ background: #111827; color:#f3f4f6; padding: 2px 6px; border-radius: 6px; font-family: ui-monospace, monospace; font-size: 12px; }
+
+    .badge { display:inline-flex; align-items:center; gap:6px; font-size:12px; padding:4px 8px; border-radius:999px; border:1px solid #e2e8f0; background:#f8fafc; }
+    .tag-list { display:flex; gap:8px; flex-wrap: wrap; }
+
+    aside.guide { position: sticky; top: 64px; height: fit-content; }
+    .guide .card { padding: 14px; }
+    .guide h3 { margin: 8px 0; font-size: 1rem; }
+    .guide a { color: var(--brand); text-decoration: none; font-weight: 600; }
+
+    /* Section color accents */
+    .accent-1 { border-left: 6px solid var(--brand); }
+    .accent-2 { border-left: 6px solid var(--brand-2); }
+    .accent-3 { border-left: 6px solid var(--brand-3); }
+
+    footer { text-align:center; color: var(--muted); padding: 48px 16px; }
+
+    /* Reduce motion respect */
+    @media (prefers-reduced-motion: reduce) {
+      .blob { animation: none; }
+      .card { animation: none; }
+      html { scroll-behavior: auto; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Animated Background Blobs -->
+  <div class="bg-anim" aria-hidden="true">
+    <div class="blob b1"></div>
+    <div class="blob b2"></div>
+    <div class="blob b3"></div>
+  </div>
+
+  <header class="hero">
+    <h1>FULL HTML <span class="badge" title="HyperText Markup Language">HTML5</span></h1>
+    <p>Is page par aapko <strong>HTML (HyperText Markup Language)</strong> ke bare me basic se lekar advanced tak sab milega — meaning, structure, commonly used tags, semantic elements, forms, tables, multimedia, metadata, aur saath-saath <strong>live code examples</strong>. Pure <em>HTML</em>.</p>
+    <div class="chips">
+      <span class="chip">Beginner → Pro</span>
+      <span class="chip">Semantic HTML</span>
+      <span class="chip">Forms & Tables</span>
+      <span class="chip">Media</span>
+      <span class="chip">SEO Basics</span>
+      <span class="chip">Accessibility</span>
+    </div>
+  </header>
+
+  <nav class="toc">
+    <div class="toc-inner">
+      <a href="#meaning">Meaning</a>
+      <a href="#structure">Basic Structure</a>
+      <a href="#text">Text & Headings</a>
+      <a href="#links">Links & Images</a>
+      <a href="#lists">Lists</a>
+      <a href="#table">Tables</a>
+      <a href="#forms">Forms</a>
+      <a href="#semantics">Semantic Tags</a>
+      <a href="#media">Audio/Video</a>
+      <a href="#metadata">Head/Meta</a>
+      <a href="#global">Global Attributes</a>
+      <a href="#entities">Entities</a>
+      <a href="#cheatsheet">Cheat‑Sheet</a>
+    </div>
+  </nav>
+
+  <main>
+    <section class="content">
+      <!-- Meaning -->
+      <div id="meaning" class="card section accent-1">
+        <h2>HTML ka matlab kya hai?</h2>
+        <p><strong>HTML</strong> ek <em>markup language</em> hai jo web pages ki <strong>structure</strong> banati hai. HTML me <code>&lt;tags&gt;</code> hote hain jo browser ko batate hain ki content ka role kya hai (heading, paragraph, image, link, form, etc.).</p>
+        <ul>
+          <li><strong>HyperText</strong> = Links ke through pages ka connection.</li>
+          <li><strong>Markup</strong> = Tags ke zariye meaning/semantics dena.</li>
+          <li><strong>Language</strong> = Rules/syntax ka set.</li>
+        </ul>
+      </div>
+
+      <!-- Basic Structure -->
+      <div id="structure" class="card section accent-2">
+        <h2>Basic Structure (Boilerplate)</h2>
+        <p>Har HTML document ki base structure kuch is tarah hoti hai:</p>
+        <details open>
+          <summary>Code: Minimal HTML5 Document</summary>
+          <pre class="code"><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+  &lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1"&gt;
+    &lt;title&gt;Page Title&lt;/title&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;h1&gt;Hello, World!&lt;/h1&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+        </details>
+        <div class="grid">
+          <div class="card">
+            <strong>&lt;!DOCTYPE html&gt;</strong>
+            <p>Browser ko batata hai ki ye document HTML5 standard follow karta hai.</p>
+          </div>
+          <div class="card">
+            <strong>&lt;html lang="en"&gt;</strong>
+            <p>Root element + language declare karna accessibility/SEO ke liye accha.</p>
+          </div>
+          <div class="card">
+            <strong>&lt;head&gt;</strong>
+            <p>Metadata, CSS/JS links, title, icons yahan hote hain.</p>
+          </div>
+          <div class="card">
+            <strong>&lt;body&gt;</strong>
+            <p>Page ka visible content (headings, paragraphs, images, etc.).</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Text & Headings -->
+      <div id="text" class="card section accent-3">
+        <h2>Text & Headings</h2>
+        <p>Headings hierarchical hote hain: <code>h1</code> (main) se <code>h6</code> (sub‑subsection) tak. Text ke liye <code>p</code>, emphasis ke liye <code>em/strong</code>, aur inline semantics ke liye <code>span</code>, <code>mark</code>, <code>small</code>, <code>sup/sub</code>.</p>
+        <details>
+          <summary>Code: Headings & Inline Text</summary>
+          <pre class="code"><code>&lt;h1&gt;Page Title&lt;/h1&gt;
+&lt;h2&gt;Section Title&lt;/h2&gt;
+&lt;p&gt;This is a &lt;strong&gt;paragraph&lt;/strong&gt; with &lt;em&gt;emphasis&lt;/em&gt;, 
+&lt;mark&gt;highlight&lt;/mark&gt;, and H&lt;sub&gt;2&lt;/sub&gt;O.&lt;/p&gt;
+</code></pre>
+        </details>
+        <div class="tag-list">
+          <span class="badge">&lt;h1&gt;…&lt;/h1&gt;</span>
+          <span class="badge">&lt;p&gt;…&lt;/p&gt;</span>
+          <span class="badge">&lt;em&gt;</span>
+          <span class="badge">&lt;strong&gt;</span>
+          <span class="badge">&lt;span&gt;</span>
+          <span class="badge">&lt;mark&gt;</span>
+          <span class="badge">&lt;small&gt;</span>
+          <span class="badge">&lt;abbr title&gt;</span>
+          <span class="badge">&lt;cite&gt;</span>
+          <span class="badge">&lt;code&gt;</span>
+          <span class="badge">&lt;kbd&gt;</span>
+          <span class="badge">&lt;sub&gt;/&lt;sup&gt;</span>
+        </div>
+      </div>
+
+      <!-- Links & Images -->
+      <div id="links" class="card section accent-1">
+        <h2>Links & Images</h2>
+        <p>Links ke liye <code>&lt;a&gt;</code> (with <code>href</code>), images ke liye <code>&lt;img&gt;</code> (with <code>src</code> + <code>alt</code>).</p>
+        <details>
+          <summary>Code: Links & Images</summary>
+          <pre class="code"><code>&lt;a href="https://developer.mozilla.org/" target="_blank" rel="noopener"&gt;MDN Docs&lt;/a&gt;
+&lt;img src="https://picsum.photos/400/200" alt="Random placeholder" width="400" height="200"&gt;
+</code></pre>
+        </details>
+        <p><span class="kbd">target="_blank"</span> naya tab kholta hai; 
+          <span class="kbd">rel="noopener"</span> security best‑practice.
+        </p>
+      </div>
+
+      <!-- Lists -->
+      <div id="lists" class="card section accent-2">
+        <h2>Lists</h2>
+        <p>Ordered list: <code>&lt;ol&gt;</code>, Unordered list: <code>&lt;ul&gt;</code>, Definition list: <code>&lt;dl&gt;</code>.</p>
+        <details>
+          <summary>Code: Lists</summary>
+          <pre class="code"><code>&lt;ul&gt;
+  &lt;li&gt;Tea&lt;/li&gt;
+  &lt;li&gt;Coffee&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;ol start="3"&gt;
+  &lt;li&gt;Step A&lt;/li&gt;
+  &lt;li&gt;Step B&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;dl&gt;
+  &lt;dt&gt;HTML&lt;/dt&gt;
+  &lt;dd&gt;Structure of the web&lt;/dd&gt;
+&lt;/dl&gt;
+</code></pre>
+        </details>
+      </div>
+
+      <!-- Tables -->
+      <div id="table" class="card section accent-3">
+        <h2>Tables</h2>
+        <p>Table structure: <code>table</code> → <code>caption</code>, <code>thead</code>, <code>tbody</code>, <code>tfoot</code>, rows <code>tr</code>, headers <code>th</code>, cells <code>td</code>.</p>
+        <details>
+          <summary>Code: Accessible Table</summary>
+          <pre class="code"><code>&lt;table&gt;
+  &lt;caption&gt;Monthly Sales&lt;/caption&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;&lt;th scope="col"&gt;Month&lt;/th&gt;&lt;th scope="col"&gt;Amount&lt;/th&gt;&lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;&lt;th scope="row"&gt;Jan&lt;/th&gt;&lt;td&gt;₹12,000&lt;/td&gt;&lt;/tr&gt;
+    &lt;tr&gt;&lt;th scope="row"&gt;Feb&lt;/th&gt;&lt;td&gt;₹15,500&lt;/td&gt;&lt;/tr&gt;
+  &lt;/tbody&gt;
+  &lt;tfoot&gt;
+    &lt;tr&gt;&lt;th scope="row"&gt;Total&lt;/th&gt;&lt;td&gt;₹27,500&lt;/td&gt;&lt;/tr&gt;
+  &lt;/tfoot&gt;
+&lt;/table&gt;
+</code></pre>
+        </details>
+      </div>
+
+      <!-- Forms -->
+      <div id="forms" class="card section accent-1">
+        <h2>Forms</h2>
+        <p>Forms data input ke liye: <code>form</code>, <code>label</code>, <code>input</code>, <code>textarea</code>, <code>select</code>, <code>button</code>, with attributes like <code>required</code>, <code>placeholder</code>, <code>name</code>, <code>type</code>.</p>
+        <details>
+          <summary>Code: Form with Inputs</summary>
+          <pre class="code"><code>&lt;form action="#" method="post"&gt;
+  &lt;label for="name"&gt;Name&lt;/label&gt;
+  &lt;input id="name" name="name" type="text" placeholder="Your name" required&gt;
+
+  &lt;label for="email"&gt;Email&lt;/label&gt;
+  &lt;input id="email" name="email" type="email" placeholder="you@example.com" required&gt;
+
+  &lt;label for="topic"&gt;Topic&lt;/label&gt;
+  &lt;select id="topic" name="topic"&gt;
+    &lt;option&gt;General&lt;/option&gt;
+    &lt;option&gt;Feedback&lt;/option&gt;
+  &lt;/select&gt;
+
+  &lt;label for="msg"&gt;Message&lt;/label&gt;
+  &lt;textarea id="msg" name="message" rows="3"&gt;&lt;/textarea&gt;
+
+  &lt;fieldset&gt;
+    &lt;legend&gt;Preferences&lt;/legend&gt;
+    &lt;label&gt;&lt;input type="checkbox" name="sub" checked&gt; Subscribe&lt;/label&gt;
+    &lt;label&gt;&lt;input type="radio" name="mode" value="light" checked&gt; Light&lt;/label&gt;
+    &lt;label&gt;&lt;input type="radio" name="mode" value="dark"&gt; Dark&lt;/label&gt;
+  &lt;/fieldset&gt;
+
+  &lt;button type="submit"&gt;Send&lt;/button&gt;
+&lt;/form&gt;
+</code></pre>
+        </details>
+        <p>Common input types: <code>text</code>, <code>email</code>, <code>password</code>, <code>number</code>, <code>date</code>, <code>file</code>, <code>color</code>, <code>range</code>, <code>checkbox</code>, <code>radio</code>, <code>submit</code>.</p>
+      </div>
+
+      <!-- Semantic Tags -->
+      <div id="semantics" class="card section accent-2">
+        <h2>Semantic Tags</h2>
+        <p>Semantic tags content ka meaning clear karte hain — SEO & accessibility friendly.</p>
+        <div class="grid">
+          <div class="card"><strong>&lt;header&gt;</strong><p>Top section: logo, nav.</p></div>
+          <div class="card"><strong>&lt;nav&gt;</strong><p>Navigation links ka group.</p></div>
+          <div class="card"><strong>&lt;main&gt;</strong><p>Page ka primary content (unique).</p></div>
+          <div class="card"><strong>&lt;section&gt;</strong><p>Topic-based grouping with heading.</p></div>
+          <div class="card"><strong>&lt;article&gt;</strong><p>Self‑contained content (blog/news).</p></div>
+          <div class="card"><strong>&lt;aside&gt;</strong><p>Side info: ads, related links.</p></div>
+          <div class="card"><strong>&lt;footer&gt;</strong><p>Page bottom: copyright, links.</p></div>
+          <div class="card"><strong>&lt;figure&gt;&lt;figcaption&gt;</strong><p>Media + caption.</p></div>
+          <div class="card"><strong>&lt;time&gt;</strong><p>Machine‑readable date/time.</p></div>
+        </div>
+        <details>
+          <summary>Code: Semantic Layout Snippet</summary>
+          <pre class="code"><code>&lt;header&gt;Site Header&lt;/header&gt;
+&lt;nav&gt;...links...&lt;/nav&gt;
+&lt;main&gt;
+  &lt;article&gt;
+    &lt;h2&gt;Blog Post&lt;/h2&gt;
+    &lt;p&gt;Content...&lt;/p&gt;
+  &lt;/article&gt;
+  &lt;aside&gt;Related&lt;/aside&gt;
+&lt;/main&gt;
+&lt;footer&gt;© 2025&lt;/footer&gt;
+</code></pre>
+        </details>
+      </div>
+
+      <!-- Media -->
+      <div id="media" class="card section accent-3">
+        <h2>Audio & Video</h2>
+        <p>Native media tags with controls, sources, captions.</p>
+        <details>
+          <summary>Code: Audio & Video</summary>
+          <pre class="code"><code>&lt;audio controls&gt;
+  &lt;source src="song.mp3" type="audio/mpeg"&gt;
+  Your browser does not support audio.
+&lt;/audio&gt;
+
+&lt;video controls width="420" poster="poster.jpg"&gt;
+  &lt;source src="clip.mp4" type="video/mp4"&gt;
+  Sorry, your browser cannot play this video.
+&lt;/video&gt;
+</code></pre>
+        </details>
+      </div>
+
+      <!-- Metadata -->
+      <div id="metadata" class="card section accent-1">
+        <h2>Head/Metadata</h2>
+        <p>Head me SEO, icons, social preview, fonts, CSS/JS links define hote hain.</p>
+        <details>
+          <summary>Code: Common &lt;head&gt; tags</summary>
+          <pre class="code"><code>&lt;meta name="description" content="Page summary"&gt;
+&lt;meta name="theme-color" content="#0ea5e9"&gt;
+&lt;link rel="icon" href="/favicon.ico" sizes="any"&gt;
+&lt;link rel="preconnect" href="https://fonts.googleapis.com"&gt;
+&lt;link rel="stylesheet" href="styles.css"&gt;
+&lt;script defer src="app.js"&gt;&lt;/script&gt;
+&lt;meta property="og:title" content="Your Title"&gt;
+&lt;meta property="og:image" content="https://example.com/cover.png"&gt;
+&lt;meta name="twitter:card" content="summary_large_image"&gt;
+</code></pre>
+        </details>
+      </div>
+
+      <!-- Global Attributes -->
+      <div id="global" class="card section accent-2">
+        <h2>Global Attributes (har tag ke sath kaam aate)</h2>
+        <ul>
+          <li><code>id</code> – unique identifier</li>
+          <li><code>class</code> – CSS/JS grouping</li>
+          <li><code>style</code> – inline CSS</li>
+          <li><code>title</code> – tooltip text</li>
+          <li><code>hidden</code> – element hide</li>
+          <li><code>tabindex</code> – keyboard focus order</li>
+          <li><code>aria-*</code> – accessibility annotations</li>
+        </ul>
+      </div>
+
+      <!-- Entities -->
+      <div id="entities" class="card section accent-3">
+        <h2>HTML Entities</h2>
+        <p>Special characters likhne ke liye entities use hote: <code>&amp;lt;</code> (&lt;), <code>&amp;gt;</code> (&gt;), <code>&amp;amp;</code> (&amp;), <code>&amp;copy;</code> (©), <code>&amp;nbsp;</code> (non‑breaking space).</p>
+      </div>
+
+      <!-- Cheat Sheet -->
+      <div id="cheatsheet" class="card section accent-1">
+        <h2>Cheat‑Sheet: Common Tags by Category</h2>
+        <div class="grid">
+          <div class="card">
+            <h3>Document & Metadata</h3>
+            <p><code>!DOCTYPE</code>, <code>html</code>, <code>head</code>, <code>meta</code>, <code>title</code>, <code>link</code>, <code>style</code>, <code>script</code>, <code>base</code></p>
+          </div>
+          <div class="card">
+            <h3>Sectioning / Semantics</h3>
+            <p><code>header</code>, <code>nav</code>, <code>main</code>, <code>section</code>, <code>article</code>, <code>aside</code>, <code>footer</code>, <code>h1–h6</code>, <code>address</code></p>
+          </div>
+          <div class="card">
+            <h3>Text Content</h3>
+            <p><code>p</code>, <code>span</code>, <code>blockquote</code>, <code>pre</code>, <code>code</code>, <code>em</code>, <code>strong</code>, <code>mark</code>, <code>small</code>, <code>sup</code>, <code>sub</code>, <code>br</code>, <code>hr</code>, <code>abbr</code>, <code>cite</code>, <code>q</code>, <code>dfn</code>, <code>time</code>, <code>kbd</code>, <code>samp</code>, <code>var</code>, <code>ruby</code>, <code>rt</code>, <code>rp</code>, <code>b</code>, <code>i</code>, <code>u</code>, <code>s</code>, <code>bdi</code>, <code>bdo</code></p>
+          </div>
+          <div class="card">
+            <h3>Media</h3>
+            <p><code>img</code>, <code>picture</code>, <code>source</code>, <code>figure</code>, <code>figcaption</code>, <code>audio</code>, <code>video</code>, <code>track</code>, <code>embed</code>, <code>object</code>, <code>param</code>, <code>iframe</code></p>
+          </div>
+          <div class="card">
+            <h3>Lists & Tables</h3>
+            <p><code>ul</code>, <code>ol</code>, <code>li</code>, <code>dl</code>, <code>dt</code>, <code>dd</code>, <code>table</code>, <code>caption</code>, <code>thead</code>, <code>tbody</code>, <code>tfoot</code>, <code>tr</code>, <code>th</code>, <code>td</code>, <code>colgroup</code>, <code>col</code></p>
+          </div>
+          <div class="card">
+            <h3>Forms</h3>
+            <p><code>form</code>, <code>label</code>, <code>input</code>, <code>button</code>, <code>textarea</code>, <code>select</code>, <code>datalist</code>, <code>optgroup</code>, <code>option</code>, <code>fieldset</code>, <code>legend</code>, <code>output</code>, <code>meter</code>, <code>progress</code></p>
+          </div>
+          <div class="card">
+            <h3>Edit & Interactive</h3>
+            <p><code>details</code>, <code>summary</code>, <code>dialog</code>, <code>menu</code>, <code>menuitem</code> (obsolete), <code>slot</code> (Web Components), <code>template</code></p>
+          </div>
+          <div class="card">
+            <h3>Deprecated/Obsolete (avoid)</h3>
+            <p><code>font</code>, <code>center</code>, <code>big</code>, <code>tt</code>, <code>marquee</code>, <code>blink</code>, <code>acronym</code>, <code>applet</code></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mini Demo Zone -->
+      <div class="card section accent-2">
+        <h2>Mini Demo</h2>
+        <p>Ye page khud ek demo hai: semantic layout, responsive grid, CSS‑only animations, aur <code>details/summary</code> toggles.</p>
+      </div>
+
+    </section>
+
+    <aside class="guide">
+      <div class="card">
+        <h3>Quick Tips</h3>
+        <ul>
+          <li>Har page me <code>lang</code> attribute zaroor set karo.</li>
+          <li>Images me <code>alt</code> likho — accessibility & SEO ke liye.</li>
+          <li>Forms me <code>label</code> ko inputs se associate karo (via <code>for</code>).</li>
+          <li>Heading order logical rakho: <code>h1 → h2 → h3</code>.</li>
+          <li>Layout ke liye CSS, meaning ke liye HTML.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Practice Ideas</h3>
+        <ol>
+          <li>Apna portfolio ek semantic layout me banao.</li>
+          <li>Accessible form create karo with validation attributes.</li>
+          <li>Responsive table design try karo (stack on small screens).</li>
+        </ol>
+      </div>
+      <div class="card">
+        <h3>Keyboard Shortcuts</h3>
+        <p><span class="kbd">Alt</span> + <span class="kbd">&larr;/&rarr;</span> (Back/Forward), <span class="kbd">Ctrl/⌘</span> + <span class="kbd">L</span> (Focus address bar)</p>
+      </div>
+      <div class="card">
+        <h3>Jump To</h3>
+        <p><a href="#structure">Boilerplate</a> · <a href="#forms">Forms</a> · <a href="#semantics">Semantics</a> · <a href="#cheatsheet">Cheat‑Sheet</a></p>
+      </div>
+    </aside>
+  </main>
+
+  <footer>
+    Built with ❤️ using HTML + CSS only By Shravan Agrawal.  <br>
+    Last Update: <time datetime="2025-09-02">2 Sep 2025</time>
+  </footer>
+</body>
+</html>
